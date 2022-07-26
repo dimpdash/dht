@@ -14,13 +14,22 @@ defmodule DHT.RegistryTest do
     assert DHT.Registry.put(registry, "hello", "world") == :error
   end
 
-  test "removes bucket", %{registry: registry} do
+  test "removes bucket", %{} do
     ref = :ref
     bucket_list = MapSet.new([:bucket])
     buckets = Radix.new([{<<0>>,bucket_list}])
     bucket_keys = %{bucket: <<0>>}
     refs = %{ref: :bucket}
-    assert DHT.Registry.remove_failed_bucket(ref, {buckets, refs, bucket_keys})
+
+    DHT.Registry.remove_failed_bucket(ref, {buckets, refs, bucket_keys})
+
+  end
+
+  test "split", %{} do
+    m = MapSet.new([1,2,3,4])
+    {first, second} = DHT.Registry.split(m)
+    assert MapSet.size(first) == MapSet.size(second)
+    assert MapSet.intersection(first, second) |> MapSet.size() == 0
   end
 
   # test "spawns buckets", %{registry: registry} do
