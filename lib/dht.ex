@@ -1,18 +1,8 @@
 defmodule DHT do
-  @moduledoc """
-  Documentation for `DHT`.
-  """
+  use Application
 
-  @doc """
-  Hello world.
-
-  ## Examples
-
-      iex> DHT.hello()
-      :world
-
-  """
-  def hello do
-    :world
+  @impl true
+  def start(_type, _args) do
+    DHT.Supervisor.start_link(name: DHT.Supervisor)
   end
 end

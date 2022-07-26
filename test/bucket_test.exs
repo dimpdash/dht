@@ -3,7 +3,7 @@ defmodule DHT.BucketTest do
   use ExUnit.Case, async: true
 
   setup do
-    {:ok, bucket} = DHT.Bucket.start_link([])
+    bucket = start_supervised!(DHT.Bucket)
     %{bucket: bucket}
   end
 
@@ -12,6 +12,10 @@ defmodule DHT.BucketTest do
 
     DHT.Bucket.put(bucket, "milk", 3)
     assert DHT.Bucket.get(bucket, "milk") == 3
+  end
+
+  test "are temporary workers" do
+    assert Supervisor.child_spec(DHT.Bucket, []).restart == :temporary
   end
 
 end

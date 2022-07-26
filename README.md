@@ -2,6 +2,9 @@
 
 **TODO: Add description**
 
+## Process
+Following https://elixir-lang.org/getting-started/mix-otp/genserver.html
+
 ## Installation
 
 If [available in Hex](https://hex.pm/docs/publish), the package can be installed

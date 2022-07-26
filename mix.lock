@@ -1,0 +1,3 @@
+%{
+  "radix": {:hex, :radix, "0.4.0", "ff10a1581d1904d687ef98c1f08cb67620a44cc174dd06545acc7ee6ca26cfde", [:mix], [], "hexpm", "dbdee0a6ad0970c6324ce46a3865b1a6d4368f1014ae82a3677dc90e45ea8215"},
+}

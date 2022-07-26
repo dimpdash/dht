@@ -8,6 +8,7 @@ defmodule DHT.Registry do
   """
 
   def start_link(opts) do
+    IO.puts "here2"
     GenServer.start_link(__MODULE__, :ok, opts)
   end
 
@@ -16,38 +17,82 @@ defmodule DHT.Registry do
   Returns `{ok: pid}` if the bucket exists, `:error` otherwise.
   """
 
-  def lookup(server, name) do
-    GenServer.call(server, {:lookup, name})
+  def get(server, key) do
+    GenServer.call(server, {:get, key})
   end
 
   @doc """
   Ensures there is a bucket associated with the given `name` in `server`
   """
 
-  def create(server, name) do
-    GenServer.cast(server, {:create, name})
+  def put(server, key, value) do
+    key_hash = :crypto.hash(:sha256, key)
+    GenServer.call(server, {:put, key_hash, value})
   end
 
   ## Define GenServer Callbacks
 
   @impl true
   def init(:ok) do
-    {:ok, %{}}
+    buckets = Radix.new() #key to bucket pid
+    bucket_keys = %{} #bucket pid to key
+    #TODO change if have multiple registries
+    #create buckets
+    refs = %{} # refs to bucket pid
+    pids = for _ <- 1..10 do
+      {:ok, bucket} = DynamicSupervisor.start_child(DHT.BucketSupervisor, DHT.Bucket)
+      ref = Process.monitor(bucket)
+      Map.put(refs, ref, bucket)
+      #Add to list
+      bucket
+    end
+    Radix.put(buckets, <<0::256>>, pids)
+    {:ok, {buckets, refs, bucket_keys}}
   end
 
   @impl true
-  def handle_call({:lookup, name}, _from, names) do
-    {:reply, Map.fetch(names, name), names}
+  def handle_call({:get, key}, _from, {buckets, refs, bucket_keys}) do
+    {:noreply, {buckets, refs}}
   end
 
   @impl true
-  def handle_cast({:create, name}, names) do
-    if Map.has_key?(names, name) do
-      {:noreply, names}
+  def handle_call({:put, key, value}, _from, {buckets, refs, bucket_keys}) do
+    #get the partition it belongs in
+    with {_, bucket_list} <- Radix.lookup(buckets, key) do
+      #update all buckets
+      for bucket <- bucket_list do
+        DHT.Bucket.put(bucket, key, value)
+      end
+      {:reply, :hey, {buckets, refs, bucket_keys}}
     else
-        {ok, bucket} = DHT.Bucket.start_link([])
-        {:noreply, Map.put(names, name, bucket)}
+      nil -> {:reply, :error, {buckets, refs, bucket_keys}}
     end
   end
 
+  @impl true
+  def handle_info({:DOWN, ref, :process, _pid, _reason}, state) do
+    remove_failed_bucket(ref, state)
+  end
+
+  @doc false
+  def remove_failed_bucket(ref, {buckets, refs, bucket_keys}) do
+    bucket = Map.get(refs, ref)
+    key = Map.get(bucket_keys, bucket)
+    {_, bucket_list} = Radix.get(buckets, key)
+    MapSet.delete(bucket_list, bucket)
+    if MapSet.size(bucket_list) == 0 do
+      Radix.delete(buckets, key)
+    end
+
+    Map.delete(refs, ref)
+
+    {buckets, refs, bucket_keys}
+  end
+
+  @impl true
+  def handle_info(msg, state) do
+    require Logger
+    Logger.debug("Unexpected message in DHT.Registry: #{inspect(msg)}")
+    {:noreply, state}
+  end
 end
