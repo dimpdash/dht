@@ -39,4 +39,13 @@ defmodule DHT.Bucket do
 
   end
 
+  @doc """
+  Gets the number of `{key, value}` pairs
+  """
+  def size(bucket) do
+    Agent.get(bucket, fn dict ->
+      Kernel.map_size(dict)
+    end)
+  end
+
 end

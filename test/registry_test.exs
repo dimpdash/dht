@@ -1,5 +1,5 @@
 defmodule DHT.RegistryTest do
-  use ExUnit.Case, async: true
+  use ExUnit.Case, async: false
 
   setup do
     registry = start_supervised!(DHT.Registry)
@@ -10,10 +10,6 @@ defmodule DHT.RegistryTest do
   #   assert DHT.Registry.get(registry, "hey")
   # end
 
-  test "puts item in dht with no buckets", %{registry: registry} do
-    assert DHT.Registry.put(registry, "hello", "world") == :error
-  end
-
   test "removes bucket", %{} do
     ref = :ref
     bucket_list = MapSet.new([:bucket])
@@ -21,7 +17,7 @@ defmodule DHT.RegistryTest do
     bucket_keys = %{bucket: <<0>>}
     refs = %{ref: :bucket}
 
-    DHT.Registry.remove_failed_bucket(ref, {buckets, refs, bucket_keys})
+    DHT.Registry.remove_failed_bucket(ref, %DHT.Registry.State{buckets: buckets, refs: refs, bucket_keys: bucket_keys})
 
   end
 
@@ -31,6 +27,47 @@ defmodule DHT.RegistryTest do
     assert MapSet.size(first) == MapSet.size(second)
     assert MapSet.intersection(first, second) |> MapSet.size() == 0
   end
+
+  test "swap last bit", %{} do
+    bs = <<0b01001::5>>
+    assert DHT.Registry.swap_last_bit(bs) == <<0b01000::5>>
+
+    bs = <<0b01000::5>>
+    assert DHT.Registry.swap_last_bit(bs) == <<0b01001::5>>
+
+    bs = <<0b0::1>>
+    assert DHT.Registry.swap_last_bit(bs) == <<0b1::1>>
+
+    bs = <<0b1::1>>
+    assert DHT.Registry.swap_last_bit(bs) == <<0b0::1>>
+  end
+
+  test "merge buckets", %{} do
+    key1 = <<0b01::2>>
+    buckets1 = MapSet.new([:a])
+    key2 = <<0b00::2>>
+    buckets2 = MapSet.new([:b])
+    pair1 = {key1, buckets1}
+    pair2 = {key2, buckets2}
+    tree = Radix.new([pair1, pair2])
+
+    assert DHT.Registry.merge_buckets(<<0b01::2>>, %{buckets: tree})
+  end
+
+  test "put", %{registry: registry} do
+    key = "banana"
+    value = "hello world"
+
+    DHT.Registry.put(registry, key, value)
+
+    assert DHT.Registry.get(registry, key) == value
+
+  end
+
+  # test "split buckets" do
+
+
+  # end
 
   # test "spawns buckets", %{registry: registry} do
   #   assert DHT.Registry.lookup(registry, "shopping") == :error
