@@ -4,7 +4,8 @@ defmodule DHT.Registry do
       :buckets,
       :refs,
       :bucket_keys,
-      target_bucket_size: 2
+      target_bucket_size: 2,
+      replicate: 3,
     ]
   end
 
@@ -52,18 +53,12 @@ defmodule DHT.Registry do
     #TODO change if have multiple registries
     #create buckets
     refs = %{} # refs to bucket pid
-    pids = for _ <- 1..10 do
-      {:ok, bucket} = DynamicSupervisor.start_child(DHT.BucketSupervisor, DHT.Bucket)
-      ref = Process.monitor(bucket)
-      Map.put(refs, ref, bucket)
-      #Add to list
-      bucket
-    end
-    {left, right} = Enum.split(pids, round(length(pids)/2))
+    {left_buckets, state} = spawn_buckets(state)
+    {right_buckets, state} = spawn_buckets(state)
     buckets = Radix.new(
       [
-        {<<0::1>>, MapSet.new(left)},
-        {<<1::1>>, MapSet.new(right)}
+        {<<0::1>>, left_buckets},
+        {<<1::1>>, right_buckets}
       ]
     )
     {:ok, %{state | buckets: buckets, refs: refs, bucket_keys: bucket_keys}}
@@ -106,29 +101,79 @@ defmodule DHT.Registry do
     end
   end
 
-  def check_rebalance(key, state = %State{}, bucket_list) do
+  def check_rebalance(key, state = %State{}) do
     #check if buckets have too much in them
+    bucket_list = Radix.get(state.buckets, key)
     size = ask_buckets_for_size(MapSet.to_list(bucket_list))
     cond do
       size > state.target_bucket_size ->
-        split_buckets(key, state, bucket_list)
+        split_buckets(key, state.buckets)
+
 
       #TODO handle merging
 
-      true ->
-        state
+      true -> state
     end
   end
 
-  def split_buckets(key, state = %State{buckets: buckets}, bucket_list) do
-    Radix.delete(buckets, key)
-    {first, second} = split(bucket_list)
+  def spawn_buckets(state = %State{replicate: n, refs: refs}) do
 
-    buckets
-      |> Radix.put(add_one_bit(key), first)
-      |> Radix.put(add_zero_bit(key),second)
+    new_refs = for _ <- 0..n-1 do
+      {:ok, bucket} = DynamicSupervisor.start_child(DHT.BucketSupervisor, DHT.Bucket)
+      ref = Process.monitor(bucket)
+      {ref, bucket}
+    end
+
+    new_refs = Map.new(new_refs)
+    new_buckets = MapSet.new(Map.values(new_refs))
+
+    {new_buckets , %{state | refs: refs}}
+  end
+
+  def split_buckets(key, state = %State{buckets: buckets}) do
+    Radix.delete(buckets, key)
+    {_, og_bucket_list} = Radix.fetch!(buckets, key)
+
+    {new_bucket_list, state} = spawn_buckets(state)
+
+    #Set new key allocation
+    old_buckets_key = add_zero_bit(key)
+    new_buckets_key = add_one_bit(key)
+
+    #Move data over
+    for bucket <- new_bucket_list do
+      DHT.Bucket.migrate(bucket, og_bucket_list, new_buckets_key)
+    end
+
+
+    # switch to new registry
+    buckets = buckets
+      |> Radix.put(old_buckets_key, og_bucket_list)
+      |> Radix.put(new_buckets_key, new_bucket_list)
+      |> Radix.drop([key])
+
+
+
 
     %{state | buckets: buckets}
+  end
+
+  def merge_buckets(key, state = %State{buckets: buckets}) do
+  keys_to_merge = Radix.more(buckets, key)
+
+
+  pids = Enum.reduce(
+    keys_to_merge,
+    MapSet.new(),
+    fn {_, child_buckets}, acc -> MapSet.union(acc, child_buckets) end
+  )
+  keys = for {child_key, _} <- keys_to_merge, do: child_key
+
+  buckets = buckets
+    |> Radix.put(key, pids)
+    |> Radix.drop(keys)
+
+  %{state | buckets: buckets}
   end
 
   def add_one_bit(bs)  do
@@ -158,21 +203,6 @@ defmodule DHT.Registry do
     len = round(length(list)/2)
     {first, second} = Enum.split(list, len)
     {MapSet.new(first), MapSet.new(second)}
-  end
-
-  def merge_buckets(key, state = %{buckets: buckets}) do
-    left = Radix.get(buckets, swap_last_bit(key))
-
-    if left != nil do
-      {_, left_buckets} = left
-      parent = get_parent(key)
-      {_, right_buckets} = Radix.fetch!(buckets, key)
-      buckets_merged = MapSet.union(left_buckets, right_buckets)
-      Radix.put(buckets, parent, buckets_merged)
-      Radix.drop(buckets, [key])
-    end
-
-    %{state | buckets: buckets}
   end
 
   @impl true
@@ -207,5 +237,8 @@ defmodule DHT.Registry do
     MapSet.put(bucket_list, bucket)
     {bucket_list, refs}
   end
+
+
+
 
 end

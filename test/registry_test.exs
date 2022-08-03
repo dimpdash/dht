@@ -42,32 +42,48 @@ defmodule DHT.RegistryTest do
     assert DHT.Registry.swap_last_bit(bs) == <<0b0::1>>
   end
 
-  test "merge buckets", %{} do
-    key1 = <<0b01::2>>
-    buckets1 = MapSet.new([:a])
-    key2 = <<0b00::2>>
-    buckets2 = MapSet.new([:b])
-    pair1 = {key1, buckets1}
-    pair2 = {key2, buckets2}
-    tree = Radix.new([pair1, pair2])
+  # test "put", %{registry: registry} do
+  #   key = "banana"
+  #   value = "hello world"
 
-    assert DHT.Registry.merge_buckets(<<0b01::2>>, %{buckets: tree})
-  end
+  #   DHT.Registry.put(registry, key, value)
 
-  test "put", %{registry: registry} do
-    key = "banana"
-    value = "hello world"
-
-    DHT.Registry.put(registry, key, value)
-
-    assert DHT.Registry.get(registry, key) == value
-
-  end
-
-  # test "split buckets" do
-
+  #   assert DHT.Registry.get(registry, key) == value
 
   # end
+
+  test "split buckets" do
+    state = %DHT.Registry.State{}
+    {og_buckets, state} = DHT.Registry.spawn_buckets(state)
+
+    key = <<0::1>>
+    state = %{state | buckets: Radix.new([{key, og_buckets}])}
+
+    state = DHT.Registry.split_buckets(key, state)
+
+    assert {<<0b00::2>>, og_buckets} == Radix.fetch!(state.buckets, <<0b00::2>>)
+
+    {_, new_buckets} = Radix.fetch!(state.buckets, <<0b01::2>>)
+    assert state.replicate == MapSet.size(new_buckets)
+  end
+
+
+  test "merge buckets" do
+    key = <<0b0::1>>
+    buckets = Radix.new(
+      [
+       {<<0b00::2>>, MapSet.new([1])},
+       {<<0b01::2>>, MapSet.new([2])}
+      ]
+    )
+
+    assert DHT.Registry.merge_buckets(key, %DHT.Registry.State{buckets: buckets}).buckets == Radix.new(
+      [
+        {key, MapSet.new([1,2])}
+      ]
+    )
+
+  end
 
   # test "spawns buckets", %{registry: registry} do
   #   assert DHT.Registry.lookup(registry, "shopping") == :error

@@ -23,7 +23,10 @@
             "requireFiles": [
                 "test/**/test_helper.exs",
                 "test/**/*_test.exs"
-            ]
+            ],
+            "env": {
+                "ERL_LIBS": "/usr/lib/elixir/lib",
+            }
         }
     ]
 }
