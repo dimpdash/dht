@@ -7,18 +7,24 @@ defmodule DHT.BucketClusterTest do
 
     {:ok, spawned} = ExUnited.spawn(nodes)
 
-    nodes = [:"a@127.0.0.1", :"b@127.0.0.1"]
-    Enum.map(nodes, fn node -> Node.spawn(node, &:ra.start/0) end)
+    nodes = for node <- nodes, do: String.to_atom(Atom.to_string(node) <> "@127.0.0.1")
+    Enum.map(nodes, fn node -> :rpc.call(node, :ra, :start, []) end)
 
     on_exit(fn ->
       ExUnited.teardown()
     end)
 
-    %{spawned: spawned, nodes: nodes}
+    {:ok, cluster, _} = DHT.BucketCluster.start(:ra_kv, nodes)
+
+    %{spawned: spawned, nodes: nodes, cluster: cluster}
   end
 
-  test "run", %{nodes: nodes} do
-    {:ok, _, _} = DHT.BucketCluster.start(:ra_kv, nodes)
+  test "put and retrieve", %{cluster: cluster} do
+
+    DHT.BucketRaft.put(cluster, "hey", "banana")
+
+    assert DHT.BucketRaft.get(cluster, "hey") == {:ok, "banana"}
+
   end
 
 
