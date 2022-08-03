@@ -5,7 +5,7 @@ defmodule DHT.BucketCluster do
 
   def start(cluster_name, nodes) do
     # ensure ra is started
-    :ra.start()
+
     # the initial cluster members
     members = for node <- nodes, do: {cluster_name, node }
     # the config passed to `init/1`, must be a `map`

@@ -8,6 +8,7 @@ defmodule DHT.Supervisor do
   @impl true
   def init(:ok) do
     children = [
+      {RaBootstrap, name: RaBootstrap},
       {DynamicSupervisor, name: DHT.BucketSupervisor, strategy: :one_for_one},
       {DHT.Registry, name: DHT.Registry},
     ]
