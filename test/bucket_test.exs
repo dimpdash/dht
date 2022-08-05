@@ -56,8 +56,4 @@ defmodule DHT.BucketTest do
   #   {:ok, _} = :ra.start_cluster(:default, clusterName, machine, members)
   # end
 
-  defp inet_loader_args do
-    '-loader inet -hosts 127.0.0.1 -setcookie #{:erlang.get_cookie()}'
-  end
-
 end

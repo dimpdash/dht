@@ -1,30 +1,40 @@
 defmodule BucketClusterManager do
+  use GenServer
+
   defmodule State do
     defstruct [
       :buckets, # [{cluster size,bucket cluster}]
+      spares: [], # Spare buckets [node]
     ]
   end
 
-  @doc """
-  Add a new bucket node
-  """
-  def join(node) do
-
+  def test(nodes) do
+    {:ok, cluster, _} = DHT.BucketCluster.start(:ra_kv2, nodes)
+    cluster
   end
 
+  def add_node(self, node) do
+    GenServer.cast(self, {:add_bucket_node, node})
+  end
 
-  def handle_cast({:add_bucket_node, node}, state = %State{buckets: buckets}) do
+  def start_link(_opts) do
+    state = %State{}
+    GenServer.start_link(__MODULE__, state)
+  end
 
-    [{size, cluster} | buckets] = buckets
+  def init(state) do
+    {:ok, state}
+  end
 
-    :ra.add_member({:bucket_cluster, node}, cluster)
-
-    buckets = [{size+1,cluster} | buckets]
-
-    buckets = List.keysort(buckets, 0)
-
-    %State{state | buckets: buckets}
-
+  def handle_cast({:add_bucket_node, node}, state = %State{spares: spares}) do
+    spares = [node | spares]
+    if length(spares) >= 3 do
+      #Form new cluster
+      {:ok, _, _} = DHT.BucketCluster.start(:bucket_dyn, spares)
+      {:noreply, %{state | spares: []}}
+    else
+      {:noreply, %{state | spares: spares}}
+    end
   end
 
   def handle_cast({:bucket_leave, _node}, state = %State{}) do
