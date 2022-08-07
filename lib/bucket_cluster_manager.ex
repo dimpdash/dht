@@ -37,8 +37,6 @@ defmodule BucketClusterManager do
     end
   end
 
-  def handle_cast({:bucket_leave, _node}, state = %State{}) do
-    state
-  end
+
 
 end

@@ -238,6 +238,27 @@ defmodule DHT.Registry do
     {bucket_list, refs}
   end
 
+  @doc """
+  Add a new bucket cluster to the registry.
+  The registry will then rebalance keys
+  """
+  #TODO
+  # def add_bucket_cluster(cluster) do
+  #   GenServer.cast({:add_bucket_cluster, cluster})
+  # end
+
+  # @impl true
+  # def handle_cast({:add_bucket_cluster, cluster}, state) do
+  #   #assign to keys
+
+  #   # migrate keys
+  #     #add keys to new cluster
+
+  #     #delete keys from old cluster
+
+
+  # end
+
 
 
 
