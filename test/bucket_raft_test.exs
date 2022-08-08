@@ -23,6 +23,7 @@ defmodule DHT.BucketRaftTest do
 
   end
 
+  @tag :wip
   test "migrate", %{cluster: to_cluster, nodes: nodes} do
 
     # create secondary cluster
@@ -34,18 +35,18 @@ defmodule DHT.BucketRaftTest do
 
     DHT.BucketRaft.put(from_cluster, <<0b000::3>>, "1")
     DHT.BucketRaft.put(from_cluster, <<0b001::3>>, "2")
-    DHT.BucketRaft.put(from_cluster, <<0b011::3>>, "3")
+    DHT.BucketRaft.put(from_cluster, <<0b111::3>>, "3")
     DHT.BucketRaft.put(from_cluster, <<0b100::3>>, "4")
 
-    key = <<0b001::3>>
-    DHT.BucketRaft.migrate_keys(to_cluster, from_cluster, key)
+    key = <<0b1::1>>
+    :ok = DHT.BucketRaft.migrate_keys(to_cluster, from_cluster, key)
 
     {:ok, from_tree} = DHT.BucketRaft.copy_tree(from_cluster)
 
     {:ok, to_tree} = DHT.BucketRaft.copy_tree(to_cluster)
 
-    from_tree == Radix.new([{<<0b000::3>>, "1"},{<<0b001::3>>, "2"}])
-    to_tree == Radix.new([{<<0b011::3>>, "3"},{<<0b100::3>>, "4"}])
+    assert from_tree == Radix.new([{<<0b000::3>>, "1"},{<<0b001::3>>, "2"}])
+    assert to_tree == Radix.new([{<<0b111::3>>, "3"},{<<0b100::3>>, "4"}])
 
     #clean up created raft cluster
     for server_id <- server_ids, do: :ra.stop_server(server_id)
