@@ -16,9 +16,26 @@ defmodule DHT.BucketRaft do
 
   end
 
+  def migrate_keys(to_cluster, from_cluster, key) do
+    process_command(to_cluster, {:migrate, from_cluster, key})
+  end
+
+
+  def copy_tree(from_cluster, key) do
+    process_command(from_cluster, {:copy, key})
+  end
+
+  def copy_tree(from_cluster) do
+    process_command(from_cluster, {:copy})
+  end
+
+  def delete_keys(from_cluster, key) do
+    process_command(from_cluster, {:delete_keys, key})
+  end
+
   def process_command(cluster, command) do
     response = :ra.process_command(List.first(cluster), command)
-
+    IO.inspect {command, response}
     case response do
       {:ok, result, _} -> {:ok, result}
       other -> other
@@ -39,5 +56,45 @@ defmodule DHT.BucketRaft do
     {Radix.put(state, key, value), :ok, @side_effects}
   end
 
+    @impl :ra_machine
+  def apply(_command_metadata, {:migrate, from_cluster, key}, state) do
 
+    #get keys from old cluster
+    state = _copy_tree(key, state)
+
+    #delete keys from that cluster
+    delete_keys(from_cluster, key)
+
+    {state, :ok, @side_effects}
+  end
+
+  def apply(_comand_metadata, {:copy, key}, state) do
+    with {:ok, new_tree} <- _copy_tree(key, state)
+    do
+      {state, new_tree, @side_effects}
+    else
+      _ -> {state, :error, @side_effects}
+    end
+  end
+
+  def apply(_comand_metadata, {:copy}, state) do
+    {state, state, @side_effects}
+  end
+
+  def apply(_command_metadata, {:delete_keys, key}, state) do
+    keys = Radix.more(state, key)
+      |> Enum.map(fn {key, _} -> key end)
+    state = Radix.drop(state, keys)
+
+    {state, :ok, @side_effects}
+  end
+
+  def _copy_tree(key, tree) do
+    with key_values <- Radix.more(tree, key),
+      new_tree <- Radix.new(key_values),
+      tree <- Radix.merge(tree, new_tree)
+    do
+      {:ok, tree}
+    end
+  end
 end
