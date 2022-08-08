@@ -1,14 +1,23 @@
 defmodule DHT.RegistryTest do
   use ExUnit.Case, async: false
 
-  setup do
-    registry = start_supervised!(DHT.Registry)
-    %{registry: registry}
+  describe "With cluster in registry" do
+
+
+    setup do
+      registry = start_supervised!(DHT.Registry)
+
+      %{cluster: cluster} = TestClusterHelper.same_node_cluster([:a, :b, :c])
+      DHT.Registry.add_bucket_cluster(registry, cluster)
+      %{registry: registry}
+    end
+
+    test "puts item in dht", %{registry: registry} do
+      assert DHT.Registry.put(registry, "hey", "hello")
+      assert DHT.Registry.get(registry, "hey") == {:ok, "hello"}
+    end
   end
 
-  # test "puts item in dht", %{registry: registry} do
-  #   assert DHT.Registry.get(registry, "hey")
-  # end
 
   # test "removes bucket", %{} do
   #   ref = :ref

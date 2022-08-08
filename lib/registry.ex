@@ -17,7 +17,7 @@ defmodule DHT.Registry do
   def start_link(opts) do
     state = %State{}
 
-    GenServer.start_link(__MODULE__, %{state: state, clusters: opts[:cluster]})
+    GenServer.start_link(__MODULE__, %{state: state}, opts)
   end
 
   @doc """
@@ -53,7 +53,7 @@ defmodule DHT.Registry do
   The registry will then rebalance keys
   """
   def add_bucket_cluster(registry, cluster) do
-    GenServer.cast(registry, {:add_bucket_cluster, cluster})
+    GenServer.call(registry, {:add_bucket_cluster, cluster})
   end
 
 
@@ -80,8 +80,25 @@ defmodule DHT.Registry do
   end
 
   @impl true
+  def handle_call({:add_bucket_cluster, cluster}, _from, state = %{buckets: buckets}) do
+    if Radix.count(buckets) == 0 do
+      buckets = Radix.put(buckets, <<>>, cluster)
+      state = %{state | buckets: buckets}
+      {:reply, :ok, state}
+    else
+      # # decide on cluster to split
+      # {from_cluster, key} = get_split_candidate(state)
+
+      # # migrate keys
+      # DHT.BucketRaft.migrate_keys(to_cluster, from_cluster, key)
+    end
+  end
+
+
+  @impl true
   def handle_cast({:put, key, value}, state = %State{buckets: buckets}) do
     #get the partition it belongs in
+
     with {_, bucket_cluster} <- Radix.lookup(buckets, key) do
       #update all buckets
       DHT.BucketRaft.put(bucket_cluster, key, value)
@@ -90,18 +107,10 @@ defmodule DHT.Registry do
   end
 
 
-  @impl true
-  def handle_cast({:add_bucket_cluster, to_cluster}, state) do
-    IO.puts "Adding cluster"
-    IO.inspect to_cluster
-    IO.puts "\n"
-    #decide on cluster to split
-    # {from_cluster, key} = get_split_candidate(state)
 
-    # migrate keys
-    # DHT.BucketRaft.migrate_keys(to_cluster, from_cluster, key)
-    {:noreply, state}
-  end
+  # defp get_split_candidate(state) do
+
+  # end
 
   # def merge_buckets(key, state = %State{buckets: buckets}) do
   #   keys_to_merge = Radix.more(buckets, key)
