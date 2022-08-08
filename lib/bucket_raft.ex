@@ -69,9 +69,9 @@ defmodule DHT.BucketRaft do
     #delete keys from the from_cluster
     :ok = delete_keys(from_cluster, key)
 
+    key_moved_count = Radix.count(new_tree)
 
-
-    {state, :ok, @side_effects}
+    {state, key_moved_count, @side_effects}
   end
 
   def apply(_comand_metadata, {:copy, key}, state) do

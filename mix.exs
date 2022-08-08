@@ -26,7 +26,6 @@ defmodule DHT.MixProject do
       {:ra, "~> 2.2"},
       {:priority_queue, "~> 1.0"},
       {:ex_united, "~> 0.1.5", only: :test},
-      # {:red_black_tree, "~> 1.2"}
       # {:dep_from_hexpm, "~> 0.3.0"},
       # {:dep_from_git, git: "https://github.com/elixir-lang/my_dep.git", tag: "0.1.0"}
     ]
