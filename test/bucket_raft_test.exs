@@ -28,7 +28,7 @@ defmodule DHT.BucketRaftTest do
     DHT.BucketRaft.put(from_cluster, <<0b100::3>>, "4")
 
     key = <<0b1::1>>
-    :ok = DHT.BucketRaft.migrate_keys(to_cluster, from_cluster, key)
+    {:ok, _} = DHT.BucketRaft.migrate_keys(to_cluster, from_cluster, key)
 
     {:ok, from_tree} = DHT.BucketRaft.copy_tree(from_cluster)
 

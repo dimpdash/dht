@@ -118,11 +118,11 @@ defmodule DHT.Registry do
   def handle_cast({:put, key, value}, state = %State{buckets: buckets}) do
     #get the partition it belongs in
 
-   with {_, bucket_cluster} <- Radix.lookup(buckets, key) do
+   with {bucket_key, bucket_cluster} <- Radix.lookup(buckets, key) do
       #update all buckets
       DHT.BucketRaft.put(bucket_cluster, key, value)
 
-      state = increment_list(state, key)
+      state = increment_list(state, bucket_key)
       {:noreply, state}
     end
     {:noreply, state}
