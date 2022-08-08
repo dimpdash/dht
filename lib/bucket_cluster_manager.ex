@@ -8,13 +8,12 @@ defmodule DHT.BucketClusterManager do
     ]
   end
 
-  def test(nodes) do
-    {:ok, cluster, _} = DHT.BucketCluster.start(:ra_kv2, nodes)
-    cluster
-  end
-
   def add_node(self, node) do
-    GenServer.cast(self, {:add_bucket_node, node})
+    case node do
+      #if a server id. ie node hostname is second argument
+      {_, _} -> GenServer.cast(self, {:add_bucket_node, node})
+      node   -> GenServer.cast(self, {:add_bucket_node, {:dyn_member, node}})
+    end
   end
 
   def start_link(_opts) do
@@ -26,11 +25,11 @@ defmodule DHT.BucketClusterManager do
     {:ok, state}
   end
 
-  def handle_cast({:add_bucket_node, node}, state = %State{spares: spares}) do
-    spares = [node | spares]
+  def handle_cast({:add_bucket_node, server_id}, state = %State{spares: spares}) do
+    spares = [server_id | spares]
     if length(spares) >= 3 do
       #Form new cluster
-      {:ok, cluster, _} = DHT.BucketCluster.start(:bucket_dyn, spares)
+      {:ok, cluster, _} = DHT.BucketCluster.start_from_server_ids(:bucket_dyn, spares)
       DHT.Registry.add_bucket_cluster(DHT.Registry, cluster)
       {:noreply, %{state | spares: []}}
     else

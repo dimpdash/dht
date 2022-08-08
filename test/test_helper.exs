@@ -19,4 +19,18 @@ defmodule TestClusterHelper do
   end
 
 
+  def same_node_cluster(nodes) do
+    server_ids = for node <- nodes, do: {node, node()}
+    {:ok, _, _} = DHT.BucketCluster.start_from_server_ids(:ra_kv, server_ids)
+
+    # on_exit(fn ->
+    #   :ra.delete_cluster(server_ids)
+    #   for server_id <- server_ids, do: :ra.stop_server(server_id)
+    #       Process.sleep(1000)
+    # end)
+
+    %{nodes: nodes, cluster: server_ids}
+  end
+
+
 end
