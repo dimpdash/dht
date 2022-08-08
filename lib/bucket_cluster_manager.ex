@@ -1,4 +1,4 @@
-defmodule BucketClusterManager do
+defmodule DHT.BucketClusterManager do
   use GenServer
 
   defmodule State do
@@ -30,12 +30,14 @@ defmodule BucketClusterManager do
     spares = [node | spares]
     if length(spares) >= 3 do
       #Form new cluster
-      {:ok, _, _} = DHT.BucketCluster.start(:bucket_dyn, spares)
+      {:ok, cluster, _} = DHT.BucketCluster.start(:bucket_dyn, spares)
+      DHT.Registry.add_bucket_cluster(DHT.Registry, cluster)
       {:noreply, %{state | spares: []}}
     else
       {:noreply, %{state | spares: spares}}
     end
   end
+
 
 
 

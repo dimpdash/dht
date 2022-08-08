@@ -19,6 +19,7 @@ defmodule DHT.BucketClusterTest do
     %{spawned: spawned, nodes: nodes, cluster: cluster}
   end
 
+  @tag :epmd
   test "put and retrieve", %{cluster: cluster} do
 
     DHT.BucketRaft.put(cluster, "hey", "banana")

@@ -19,6 +19,7 @@ defmodule DHT.BucketClusterManagerTest do
     %{spawned: spawned, nodes: nodes, cluster_manager: cluster_manager}
   end
 
+  @tag :epmd
   test "add buckets", %{cluster_manager: cluster_manager, nodes: nodes} do
     {right_nodes, left_nodes} = Enum.split(nodes, 3)
 
@@ -27,6 +28,7 @@ defmodule DHT.BucketClusterManagerTest do
 
   end
 
+  @tag :epmd
   def add_three(cluster_manager, nodes) do
     server_ids = for node <- nodes, do: {:bucket_dyn, node}
 

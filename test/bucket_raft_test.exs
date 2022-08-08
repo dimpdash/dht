@@ -17,13 +17,12 @@ defmodule DHT.BucketRaftTest do
 
   test "put and retrieve", %{cluster: cluster} do
 
-    {:ok, _} = DHT.BucketRaft.put(cluster, "hey", "banana")
+    :ok = DHT.BucketRaft.put(cluster, "hey", "banana")
 
     assert DHT.BucketRaft.get(cluster, "hey") == {:ok, "banana"}
 
   end
 
-  @tag :wip
   test "migrate", %{cluster: to_cluster, nodes: nodes} do
 
     # create secondary cluster
@@ -57,14 +56,13 @@ defmodule DHT.BucketRaftTest do
     t = Radix.put(t, <<0b000::3>>, "1")
     t = Radix.put(t, <<0b001::3>>, "2")
     t = Radix.put(t, <<0b011::3>>, "3")
-    t = Radix.put(t, <<0b100::3>>, "4")
 
     DHT.BucketRaft.put(cluster, <<0b000::3>>, "1")
     DHT.BucketRaft.put(cluster, <<0b001::3>>, "2")
     DHT.BucketRaft.put(cluster, <<0b011::3>>, "3")
     DHT.BucketRaft.put(cluster, <<0b100::3>>, "4")
 
-    assert {:ok, t} == DHT.BucketRaft.copy_tree(cluster, <<0b000::3>>)
+    assert {:ok, t} == DHT.BucketRaft.copy_tree(cluster, <<0b0::1>>)
   end
 
   test "delete", %{cluster: cluster} do

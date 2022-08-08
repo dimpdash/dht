@@ -10,37 +10,37 @@ defmodule DHT.RegistryTest do
   #   assert DHT.Registry.get(registry, "hey")
   # end
 
-  test "removes bucket", %{} do
-    ref = :ref
-    bucket_list = MapSet.new([:bucket])
-    buckets = Radix.new([{<<0>>,bucket_list}])
-    bucket_keys = %{bucket: <<0>>}
-    refs = %{ref: :bucket}
+  # test "removes bucket", %{} do
+  #   ref = :ref
+  #   bucket_list = MapSet.new([:bucket])
+  #   buckets = Radix.new([{<<0>>,bucket_list}])
+  #   bucket_keys = %{bucket: <<0>>}
+  #   refs = %{ref: :bucket}
 
-    DHT.Registry.remove_failed_bucket(ref, %DHT.Registry.State{buckets: buckets, refs: refs, bucket_keys: bucket_keys})
+  #   DHT.Registry.remove_failed_bucket(ref, %DHT.Registry.State{buckets: buckets, refs: refs, bucket_keys: bucket_keys})
 
-  end
+  # end
 
-  test "split", %{} do
-    m = MapSet.new([1,2,3,4])
-    {first, second} = DHT.Registry.split(m)
-    assert MapSet.size(first) == MapSet.size(second)
-    assert MapSet.intersection(first, second) |> MapSet.size() == 0
-  end
+  # test "split", %{} do
+  #   m = MapSet.new([1,2,3,4])
+  #   {first, second} = DHT.Registry.split(m)
+  #   assert MapSet.size(first) == MapSet.size(second)
+  #   assert MapSet.intersection(first, second) |> MapSet.size() == 0
+  # end
 
-  test "swap last bit", %{} do
-    bs = <<0b01001::5>>
-    assert DHT.Registry.swap_last_bit(bs) == <<0b01000::5>>
+  # test "swap last bit", %{} do
+  #   bs = <<0b01001::5>>
+  #   assert DHT.Registry.swap_last_bit(bs) == <<0b01000::5>>
 
-    bs = <<0b01000::5>>
-    assert DHT.Registry.swap_last_bit(bs) == <<0b01001::5>>
+  #   bs = <<0b01000::5>>
+  #   assert DHT.Registry.swap_last_bit(bs) == <<0b01001::5>>
 
-    bs = <<0b0::1>>
-    assert DHT.Registry.swap_last_bit(bs) == <<0b1::1>>
+  #   bs = <<0b0::1>>
+  #   assert DHT.Registry.swap_last_bit(bs) == <<0b1::1>>
 
-    bs = <<0b1::1>>
-    assert DHT.Registry.swap_last_bit(bs) == <<0b0::1>>
-  end
+  #   bs = <<0b1::1>>
+  #   assert DHT.Registry.swap_last_bit(bs) == <<0b0::1>>
+  # end
 
   # test "put", %{registry: registry} do
   #   key = "banana"
@@ -52,38 +52,38 @@ defmodule DHT.RegistryTest do
 
   # end
 
-  test "split buckets" do
-    state = %DHT.Registry.State{}
-    {og_buckets, state} = DHT.Registry.spawn_buckets(state)
+  # test "split buckets" do
+  #   state = %DHT.Registry.State{}
+  #   {og_buckets, state} = DHT.Registry.spawn_buckets(state)
 
-    key = <<0::1>>
-    state = %{state | buckets: Radix.new([{key, og_buckets}])}
+  #   key = <<0::1>>
+  #   state = %{state | buckets: Radix.new([{key, og_buckets}])}
 
-    state = DHT.Registry.split_buckets(key, state)
+  #   state = DHT.Registry.split_buckets(key, state)
 
-    assert {<<0b00::2>>, og_buckets} == Radix.fetch!(state.buckets, <<0b00::2>>)
+  #   assert {<<0b00::2>>, og_buckets} == Radix.fetch!(state.buckets, <<0b00::2>>)
 
-    {_, new_buckets} = Radix.fetch!(state.buckets, <<0b01::2>>)
-    assert state.replicate == MapSet.size(new_buckets)
-  end
+  #   {_, new_buckets} = Radix.fetch!(state.buckets, <<0b01::2>>)
+  #   assert state.replicate == MapSet.size(new_buckets)
+  # end
 
 
-  test "merge buckets" do
-    key = <<0b0::1>>
-    buckets = Radix.new(
-      [
-       {<<0b00::2>>, MapSet.new([1])},
-       {<<0b01::2>>, MapSet.new([2])}
-      ]
-    )
+  # test "merge buckets" do
+  #   key = <<0b0::1>>
+  #   buckets = Radix.new(
+  #     [
+  #      {<<0b00::2>>, MapSet.new([1])},
+  #      {<<0b01::2>>, MapSet.new([2])}
+  #     ]
+  #   )
 
-    assert DHT.Registry.merge_buckets(key, %DHT.Registry.State{buckets: buckets}).buckets == Radix.new(
-      [
-        {key, MapSet.new([1,2])}
-      ]
-    )
+  #   assert DHT.Registry.merge_buckets(key, %DHT.Registry.State{buckets: buckets}).buckets == Radix.new(
+  #     [
+  #       {key, MapSet.new([1,2])}
+  #     ]
+  #   )
 
-  end
+  # end
 
   # test "spawns buckets", %{registry: registry} do
   #   assert DHT.Registry.lookup(registry, "shopping") == :error
