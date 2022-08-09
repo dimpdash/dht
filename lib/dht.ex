@@ -14,5 +14,7 @@ defmodule DHT do
     {:ok}
   end
 
+  def put(key, value), do: DHT.Registry.put(DHT.Registry, key, value)
 
+  def get(key), do: DHT.Registry.get(DHT.Registry, key)
 end
