@@ -16,7 +16,7 @@ defmodule DHT.BucketRaft do
 
   end
 
-  def migrate_keys(to_cluster, from_cluster, key) do
+  def migrate_keys(to_cluster, from_cluster, key \\ <<>>) do
     process_command(to_cluster, {:migrate, from_cluster, key})
   end
 

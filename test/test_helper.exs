@@ -5,6 +5,7 @@ defmodule TestClusterHelper do
   use ExUnit.Case
 
   def same_node_cluster() do
+
     nodes = [node()]
     server_ids = [:ra_kv, node()]
     {:ok, _, _} = DHT.BucketCluster.start(:ra_kv, nodes)
@@ -20,6 +21,7 @@ defmodule TestClusterHelper do
 
 
   def same_node_cluster(nodes) do
+
     server_ids = for node <- nodes, do: {node, node()}
     {:ok, _, _} = DHT.BucketCluster.start_from_server_ids(:ra_kv, server_ids)
 

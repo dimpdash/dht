@@ -3,6 +3,7 @@ defmodule DHT do
 
   @impl true
   def start(_type, _args) do
+    :logger.set_application_level(:ra, :none)
     DHT.Supervisor.start_link(name: DHT.Supervisor)
   end
 
