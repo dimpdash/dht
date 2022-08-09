@@ -10,6 +10,7 @@ defmodule DHT do
     case DHT.BucketClusterManager.add_node(DHT.BucketClusterManager, node) do
       {:ok, cluster} -> DHT.Registry.add_bucket_cluster(DHT.Registry, cluster)
     end
+    {:ok}
   end
 
 
