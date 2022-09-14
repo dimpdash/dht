@@ -22,3 +22,17 @@ Documentation can be generated with [ExDoc](https://github.com/elixir-lang/ex_do
 and published on [HexDocs](https://hexdocs.pm). Once published, the docs can
 be found at <https://hexdocs.pm/dht>.
 
+# Developing
+
+## Testing 
+
+Run all tests withouth the epmd daemon
+`mix test --exclude epmd`
+
+To run all tests need th epmd daemon running
+1. `epmd -daemon`
+2. `mix test`
+
+## Running
+
+`iex -S mix`
