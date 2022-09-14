@@ -29,7 +29,7 @@ defmodule DHT.BucketClusterManager do
     spares = [server_id | spares]
     if length(spares) >= 3 do
       #Form new cluster
-      {:ok, cluster, _} = DHT.BucketCluster.start_from_server_ids(:bucket_dyn, spares)
+      {:ok, cluster, _} = DHT.BucketCluster.start_from_server_ids(:dyn_member, spares)
 
       # DHT.Registry.add_bucket_cluster(DHT.Registry, cluster)
 

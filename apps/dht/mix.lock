@@ -2,8 +2,12 @@
   "aten": {:hex, :aten, "0.5.8", "b5c97f48517c4f37f26a519aa57a00a31ff1b8ea4324ec1cae27f818ed5c0db2", [:rebar3], [], "hexpm", "64d40a8cf0ddfea4e13af00b7327f0925147f83612d0627d9506cbffe90c13ef"},
   "ex_united": {:hex, :ex_united, "0.1.5", "48941f1ad77414b7d41e56b39fa82f0205cec2b99c48471fc2c4116cb21962c4", [:mix], [], "hexpm", "4aaec070d88b083c5de324922754609eb369f1643a841bb3b057c06fb152544e"},
   "gen_batch_server": {:hex, :gen_batch_server, "0.8.8", "7840a1fa63ee1effc83e8a91d22664847a2ba1192d30eafffd914acb51578068", [:rebar3], [], "hexpm", "c3e6a1a2a0fb62aee631a98cfa0fd8903e9562422cbf72043953e2fb1d203017"},
+  "global_flags": {:hex, :global_flags, "1.0.0", "ee6b864979a1fb38d1fbc67838565644baf632212bce864adca21042df036433", [:rebar3], [], "hexpm", "85d944cecd0f8f96b20ce70b5b16ebccedfcd25e744376b131e89ce61ba93176"},
+  "local_cluster": {:hex, :local_cluster, "1.2.1", "8eab3b8a387680f0872eacfb1a8bd5a91cb1d4d61256eec6a655b07ac7030c73", [:mix], [{:global_flags, "~> 1.0", [hex: :global_flags, repo: "hexpm", optional: false]}], "hexpm", "aae80c9bc92c911cb0be085fdeea2a9f5b88f81b6bec2ff1fec244bb0acc232c"},
   "priority_queue": {:hex, :priority_queue, "1.0.0", "5ff5f83a764b635e71f0e41bf78b9763bb233bbac8f5733b4b09b6730bddf866", [:mix], [], "hexpm", "ba3dc420a5898d863803455c05ad870c6b6f3adb12b50ebea6cd6aeed1b358b7"},
   "ra": {:hex, :ra, "2.2.0", "5cecfa78215e12a5eb0108558fad9739447af77aaa93ad21421a2a362b235a1e", [:rebar3], [{:aten, "0.5.8", [hex: :aten, repo: "hexpm", optional: false]}, {:gen_batch_server, "0.8.8", [hex: :gen_batch_server, repo: "hexpm", optional: false]}, {:seshat, "0.3.2", [hex: :seshat, repo: "hexpm", optional: false]}], "hexpm", "e130a9c0bde791d5a1779d1e0145ec50475bc1f03c4c35b59de7541d8757fef9"},
   "radix": {:hex, :radix, "0.4.0", "ff10a1581d1904d687ef98c1f08cb67620a44cc174dd06545acc7ee6ca26cfde", [:mix], [], "hexpm", "dbdee0a6ad0970c6324ce46a3865b1a6d4368f1014ae82a3677dc90e45ea8215"},
+  "rbtree": {:hex, :rbtree, "0.1.6", "879252e571c606ab02219a95389e1d2f5a21de8bb15fa2709c1f5106dd50d05b", [:mix], [], "hexpm", "1505eb0c055dff4c2a5a5b6fbceeddddd19231ee7e410bb252dff7524652f7a1"},
+  "red_black_tree": {:hex, :red_black_tree, "1.2.0", "710776dc25a6f7a9cf19bc1fa15c2587fce6af180cb70a4ed0b1e6af93c1eb29", [:mix], [], "hexpm", "1e8e7b85d075e249f9384ba0fcd2aacbff3697a5cb3cb5c9838c86f762b79725"},
   "seshat": {:hex, :seshat, "0.3.2", "16cf14e92aecb927d8840387b97a362d0781997a906d0f3bbb274eb0ec3d74d9", [:rebar3], [], "hexpm", "20d820acbeef9d07298ee863d0c9d06f8e620acba100939ebb2925e4d6b0dfc7"},
 }

@@ -8,8 +8,9 @@ defmodule DHTTest do
     {:ok, spawned} = ExUnited.spawn(nodes)
 
     nodes = for node <- nodes, do: String.to_atom(Atom.to_string(node) <> "@127.0.0.1")
-
+    IO.puts node()
     for node <- nodes do
+      IO.puts node
       DHT.add_node(node)
     end
 

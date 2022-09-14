@@ -9,6 +9,7 @@ defmodule DHT do
 
   def add_node(node) do
     :rpc.call(node, :ra, :start, [])
+
     case DHT.BucketClusterManager.add_node(DHT.BucketClusterManager, node) do
       {:ok, cluster} -> DHT.Registry.add_bucket_cluster(DHT.Registry, cluster)
       :ok -> :ok
