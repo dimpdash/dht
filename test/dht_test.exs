@@ -3,12 +3,11 @@ defmodule DHTTest do
   doctest DHT
 
   setup do
-    nodes = [:a, :b, :c]
+    nodes = [:dht_a, :dht_b, :dht_c]
 
     {:ok, spawned} = ExUnited.spawn(nodes)
 
     nodes = for node <- nodes, do: String.to_atom(Atom.to_string(node) <> "@127.0.0.1")
-    Enum.map(nodes, fn node -> :rpc.call(node, :ra, :start, []) end)
 
     for node <- nodes do
       DHT.add_node(node)

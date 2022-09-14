@@ -31,7 +31,7 @@ defmodule DHT.BucketClusterManager do
       #Form new cluster
       {:ok, cluster, _} = DHT.BucketCluster.start_from_server_ids(:bucket_dyn, spares)
 
-      DHT.Registry.add_bucket_cluster(DHT.Registry, cluster)
+      # DHT.Registry.add_bucket_cluster(DHT.Registry, cluster)
 
       {:reply, {:ok, cluster}, %{state | spares: []}}
     else
